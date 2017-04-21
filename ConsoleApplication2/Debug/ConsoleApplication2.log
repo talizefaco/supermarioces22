@@ -1,0 +1,45 @@
+﻿  ConsoleApplication2.cpp
+ConsoleApplication2.cpp(95): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(96): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(104): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(175): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(235): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(297): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(360): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(512): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(517): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(528): warning C4305: '+=': truncation from 'double' to 'float'
+ConsoleApplication2.cpp(540): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(544): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(603): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(689): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(690): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(724): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(725): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(738): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(836): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+ConsoleApplication2.cpp(850): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(863): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(876): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(884): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(886): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(897): warning C4305: '+=': truncation from 'double' to 'float'
+ConsoleApplication2.cpp(905): warning C4305: '-=': truncation from 'double' to 'float'
+ConsoleApplication2.cpp(912): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(922): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(923): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(924): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(936): warning C4305: '-=': truncation from 'double' to 'float'
+ConsoleApplication2.cpp(944): warning C4305: '+=': truncation from 'double' to 'float'
+ConsoleApplication2.cpp(951): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(961): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(962): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(963): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(1080): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(1127): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(1168): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(1173): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+ConsoleApplication2.cpp(1182): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+ConsoleApplication2.cpp(1183): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  ConsoleApplication2.vcxproj -> C:\Users\dpcpr\Documents\Visual Studio 2015\Projects\ConsoleApplication2\Debug\ConsoleApplication2.exe
+  ConsoleApplication2.vcxproj -> C:\Users\dpcpr\Documents\Visual Studio 2015\Projects\ConsoleApplication2\Debug\ConsoleApplication2.pdb (Full PDB)
