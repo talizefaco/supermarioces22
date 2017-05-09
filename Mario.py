@@ -5,19 +5,30 @@ from operator import attrgetter
 import time
 import xinput
 import random
+import queue
+from threading import Thread, RLock
+
+lock = RLock()
+
+def worker():
+    while True:
+        q.get()()
+        q.task_done()
 
 screen_x = 1280
 screen_y = 768
 
 green = Color('#00FF00')
 """Inicializar o pygame"""
+
 pygame.mixer.pre_init(44100, 32, 2, 4096)
 pygame.init()
 pygame.mixer.init(44100, -16, 2, 2048)
 screen = pygame.display.set_mode((screen_x, screen_y), 0, 32)
 pygame.display.set_caption('Mario')
-myfont = pygame.font.SysFont("monospace", 30)
-menufont = pygame.font.SysFont("monospace", 50)
+menufont = pygame.font.Font("SuperMarioBros.ttf", 90)
+gamefont = pygame.font.Font("SuperMarioBros.ttf", 70)
+myfont = pygame.font.Font("SuperMarioBros.ttf", 30)
 
 pygame.joystick.init()
 joysticks = xinput.XInputJoystick.enumerate_devices()
@@ -31,11 +42,16 @@ if device_numbers:
 try:
     sheet = pygame.image.load('sprites.png')
     background = pygame.image.load('background.png').convert()
+    back_menu = pygame.image.load('back_menu.png').convert()
+    mario_wins = pygame.image.load('mario_wins.png').convert()
+    luigi_wins = pygame.image.load('luigi_wins.png').convert()
+    draw_round = pygame.image.load('draw_round.png').convert()
     jump_sound = pygame.mixer.Sound('Jump.wav')
     coin_sound = pygame.mixer.Sound('Coin.wav')
     bomb_sound = pygame.mixer.Sound('Bomb.wav')
     death_sound = pygame.mixer.Sound('Death.wav')
     mush_sound = pygame.mixer.Sound('Mush_up.wav')
+    pause_sound = pygame.mixer.Sound('Pause.wav')
 except:
     print("Erro: Arquivo não encontrado. Certifique-se de que todos estão na mesma pasta do jogo")
     exit()
@@ -43,12 +59,12 @@ except:
 grav = 1
 bomb_time = 3.5
 jump_speed = 17
-max_mana = 1000
-mana_per_coin = 200
+max_mana = 1500
+mana_per_coin = 350
 mana_gain_per_tick = 2
 mana_cost_per_tick = 25
 player_speed = 5
-player_acceleration = 0.05
+player_acceleration = 0.1
 player_max_speed = 8
 
 def clip_sheet(position):
@@ -67,18 +83,18 @@ def signal(x):
 def collides(obj, lista, inicial = None):   #interage com o pygame
     """Essa função detecta colisão de um ojeto com uma determinada lista de objetos e retorna a primeira colisão que encontrar
     Caso receba um argumento adicional, ela só começa a procurar colisão a partir do objeto recebido"""
-    if(inicial != None):
-        i = 0
-        while(lista[i] != inicial):
-            i += 1
-        lista2 = lista[i+1:]
-    else:
-        lista2 = lista
-
-    obj_rect = obj.get_rect()
-    for each in lista2:
-        if obj_rect.colliderect(each.get_rect()) and each != obj:
-            return each
+    with lock:
+        if(inicial != None):
+            i = 0
+            while(lista[i] != inicial):
+                i += 1
+            lista2 = lista[i+1:]
+        else:
+            lista2 = lista
+        obj_rect = obj.get_rect()
+        for each in lista2:
+             if obj_rect.colliderect(each.get_rect()) and each != obj:
+                return each
     return 0
 
 class Option():
@@ -129,11 +145,11 @@ class Menu():
         self.print()
 
     def print(self):
-        print_background()
+        screen.blit(back_menu, (0, 0))
         i = 0
         for opt in self.options:
-            label = menufont.render(str(opt.label), 1, (255*(self.selected == i), 0, 0))
-            screen.blit(label, ((screen_x - menufont.size(opt.label)[0])/2, screen_y/2 - 50*self.num_options + 100*i + (100 - menufont.size(opt.label)[1])/2))
+            label = menufont.render(str(opt.label), 1, (0, 0,255*(self.selected == i)))
+            screen.blit(label, ((screen_x - menufont.size(opt.label)[0])/2, screen_y/2 - 75*self.num_options + 150*i + (150 - menufont.size(opt.label)[1])/2))
             i += 1
 
 class Bloco():
@@ -173,38 +189,68 @@ class Bloco():
         return 0
 
     def update_position(self, companion = None):
-        x = collides(self, lista_obj[0])
-        if x:
-            print(self.get_rect[0],self.get_rect[1],self.get_rect[2],self.get_rect[3], self.__class__.__name__)
-            print(x.get_rect[0],x.get_rect[1],x.get_rect[2],x.get_rect[3], x.__class__.__name__)
-            raise()
-        self.speed[1] += grav*deltat*30
-        for axis in range(2):
-            avanco = self.speed[axis]*deltat*30
-            while avanco > 0.5 or avanco < -0.5:
-                self.position[axis] += signal(avanco)
-                if companion != None:
-                    companion.position[axis] += signal(avanco)
-                self.trigger_events()
+        with lock:
+            if self.list_index == 0:
                 x = collides(self, lista_obj[0])
-                if x != 0:
-                    self.collision(x)
-                    self.position[axis] -= signal(avanco)
+                if x:
+                    print(self.get_rect()[0],self.get_rect()[1],self.get_rect()[2],self.get_rect()[3], self.__class__.__name__)
+                    print(x.get_rect()[0],x.get_rect()[1],x.get_rect()[2],x.get_rect()[3], x.__class__.__name__)
+                    #raise()
+            self.speed[1] += grav*deltat*30
+            for axis in range(2):
+                avanco = self.speed[axis]*deltat*30
+                if avanco > 0.5 or avanco < -0.5:
+                    self.position[axis] += signal(avanco)
                     if companion != None:
-                        companion.position[axis] -= signal(avanco)
-                    self.speed[axis] = self.collision_coefficient[axis]* self.speed[axis]
-                    break
-                avanco -= signal(avanco)
+                        companion.position[axis] += signal(avanco)
+                    self.trigger_events()
+                    x = collides(self, lista_obj[0])
+                    if x != 0:
+                        self.collision(x)
+                        self.position[axis] -= signal(avanco)
+                        if companion != None:
+                            companion.position[axis] -= signal(avanco)
+                        self.speed[axis] = self.collision_coefficient[axis]* self.speed[axis]
+                        avanco = 0
+                    avanco -= signal(avanco)
+
+                if avanco > 0.5 or avanco < -0.5:
+                    self.position[axis] += avanco
+                    if companion != None:
+                        companion.position[axis] += avanco
+                    if collides(self, lista_obj[0]) != 0:
+                        self.position[axis] -= avanco
+                        if companion != None:
+                            companion.position[axis] -= avanco
+                    else:
+                        avanco = 0
+                        self.trigger_events()
+
+                while avanco > 0.5 or avanco < -0.5:
+                    self.position[axis] += signal(avanco)
+                    if companion != None:
+                        companion.position[axis] += signal(avanco)
+                    self.trigger_events()
+                    x = collides(self, lista_obj[0])
+                    if x != 0:
+                        self.collision(x)
+                        self.position[axis] -= signal(avanco)
+                        if companion != None:
+                            companion.position[axis] -= signal(avanco)
+                        self.speed[axis] = self.collision_coefficient[axis]* self.speed[axis]
+                        break
+                    avanco -= signal(avanco)
 
     def trigger_events(self):
         x = collides(self, lista_obj[1])
         anterior = None
-        while  x != 0:
-            if x.collision(self) == 1:
-                x = collides(self, lista_obj[1], anterior)
-            else:
-                anterior = x
-                x = collides(self, lista_obj[1], anterior)
+        with lock:
+            while  x != 0:
+                if x.collision(self) == 1:
+                    x = collides(self, lista_obj[1], anterior)
+                else:
+                    anterior = x
+                    x = collides(self, lista_obj[1], anterior)
 
 class Cogumelo(Bloco):
     def __init__(self, positionx, positiony, vel = 0):
@@ -239,12 +285,13 @@ class Box(Bloco):
         self.trig = BoxTrigger(self)
 
     def update(self):
-        if self.ticks_to_change == 0:
-            self.ticks_to_change = 5
-            self.sprite_index = (self.sprite_index + 1) % 3
-            self.image = self.sprite[self.sprite_index]
-        else:
-            self.ticks_to_change -= 1
+        if self.sprite_index < 3:
+            if self.ticks_to_change == 0:
+                self.ticks_to_change = 5
+                self.sprite_index = (self.sprite_index + 1) % 3
+                self.image = self.sprite[self.sprite_index]
+            else:
+                self.ticks_to_change -= 1
 
     def trigger(self, who_triggers):
         self.sprite_index = 3
@@ -264,14 +311,18 @@ class Box(Bloco):
         elif(self.content == "Bomb"):
             funcoes_update.append(self.spawn_items)
 
-
     def spawn_items(self):
         if self.content == "Bomb":
-            bomba = Bomb(self.position[0], self.position[1] - 32, random.choice([-4, 4]))
-            if collides(bomba, lista_obj[0]) != 0:
-                bomba.remove()
-            else:
-                self.qtd -= 1
+            with lock:
+                bomba = Bomb(self.position[0], self.position[1] - 32, random.choice([-4, 4]), 1)
+                if collides(bomba, lista_obj[0]) != 0:
+                    bomba.remove()
+                else:
+                    self.qtd -= 1
+                    funcoes_update.append(bomba.update)
+                    bomba.dragger = Dragger(bomba)
+                    lista_obj[0].append(bomba)
+
         if self.qtd == 0:
             funcoes_update.remove(self.spawn_items)
 
@@ -349,14 +400,17 @@ class Animacao_Moeda(Bloco):
             self.tick -= 1
 
 class Bomb(Bloco):
-    def __init__(self, positionx, positiony, vx = 0):
+    def __init__(self, positionx, positiony, vx = 0, imaginario = 0):
         super().__init__(positionx + 1, positiony - 16, 30, 48, clip_sheet([360, 0, 30, 48]), 1)
         self.raio_de_explosao = 60
         self.spawned_time = last_time
         self.collision_coefficient = [-1, -0.5]
         self.speed[0] = vx
-        funcoes_update.append(self.update)
-        self.dragger = Dragger(self)
+        if not imaginario:
+            self.dragger = Dragger(self)
+            funcoes_update.append(self.update)
+        else:
+            lista_obj[0].remove(self)
 
     def update(self):
         self.dragger.cont = 0
@@ -385,9 +439,12 @@ class Bomb(Bloco):
                 x = collides(obj_explosao, lista_obj[i], anterior)
 
     def remove(self):
-        funcoes_update.remove(self.update)
-        lista_obj[0].remove(self)
-        lista_obj[1].remove(self.dragger)
+        try:
+            funcoes_update.remove(self.update)
+            lista_obj[0].remove(self)
+            lista_obj[1].remove(self.dragger)
+        except:
+            pass
 
 class Explosao(Bloco):
     def __init__(self, myBomb):
@@ -402,24 +459,23 @@ class Dragger(Bloco):
 
     def collision(self, who_triggers):
         self.cont += 1
-        if self.cont <= 3:
+        if self.cont <= 6:
             if (who_triggers != self.myobj and who_triggers != self):
-                if who_triggers.position[0] < self.position[0]:
-                    self.position[0] += 1
-                    self.myobj.position[0] += 1
-                    self.trigger_events()
-                    if collides(self.myobj, lista_obj[0]) != 0:
-                        self.position[0] -= 1
-                        self.myobj.position[0] -= 1
-
-
-                else:
-                    self.position[0] -= 1
-                    self.myobj.position[0] -= 1
-                    self.trigger_events()
-                    if collides(self.myobj, lista_obj[0]) != 0:
+                with lock:
+                    if who_triggers.position[0] < self.position[0]:
                         self.position[0] += 1
                         self.myobj.position[0] += 1
+                        self.trigger_events()
+                        if collides(self.myobj, lista_obj[0]) != 0:
+                            self.position[0] -= 1
+                            self.myobj.position[0] -= 1
+                    else:
+                        self.position[0] -= 1
+                        self.myobj.position[0] -= 1
+                        self.trigger_events()
+                        if collides(self.myobj, lista_obj[0]) != 0:
+                            self.position[0] += 1
+                            self.myobj.position[0] += 1
         return 0
 
 class Animacao_Bomba(Bloco):
@@ -461,12 +517,13 @@ class Player(Bloco):
         self.bomb_button_hold = 0
         self.buy_button_hold = 0
         self.mana = max_mana
-        self.grande = 1
+        self.grande = 0
         self.coins = 0
-        self.bombs = 5
+        self.bombs = bombs_per_player
         self.ticks_to_change = 5
         self.change_pending = self.sprite_index
         self.ticks_to_stop = 0
+        self.is_dead = 0
         funcoes_update.append(self.update_player)
         funcoes_update.append(self.print_info)
 
@@ -483,17 +540,18 @@ class Player(Bloco):
     def get_inputs(self):
         pressed_keys = pygame.key.get_pressed()
         global grav
-        if ((pressed_keys[K_KP1] and self.player == 0)  or (pressed_keys[K_e] and self.player == 1) or joystick_commands[self.player]['B'] > 0.1) and self.mana < max_mana and self.coins and not self.buy_button_hold:
+
+        if (pressed_keys[comandos[self.player]['Comprar Mana']] or joystick_commands[self.player]['B'] > 0.1) and self.mana < max_mana and self.coins and not self.buy_button_hold:
             self.buy_button_hold = 1
             self.controlling_grav = 1
             self.coins -= 1
             self.mana += mana_per_coin
             if self.mana >= max_mana:
                 self.mana = max_mana
-        elif not ((pressed_keys[K_1] and self.player == 0)  or (pressed_keys[K_e] and self.player == 1) or joystick_commands[self.player]['B'] > 0.1):
+        elif not (pressed_keys[comandos[self.player]['Comprar Mana']] or joystick_commands[self.player]['B'] > 0.1):
             self.buy_button_hold = 0
 
-        if ((pressed_keys[K_KP0] and self.player == 0)  or (pressed_keys[K_q] and self.player == 1) or joystick_commands[self.player]['L_trigger'] > 0.1) and self.mana >= mana_cost_per_tick:
+        if (pressed_keys[comandos[self.player]['Poder']] or joystick_commands[self.player]['L_trigger'] > 0.1) and self.mana >= mana_cost_per_tick:
             self.controlling_grav = 1
             self.mana -= mana_cost_per_tick
             grav = -1*grav*signal(grav)
@@ -503,51 +561,39 @@ class Player(Bloco):
                 grav = grav*signal(grav)
 
         if grav > 0:
-            if (pressed_keys[K_DOWN] and self.player == 0)  or (pressed_keys[K_s] and self.player == 1) or joystick_commands[self.player]['y_axis'] < -0.2:
+            if pressed_keys[comandos[self.player]['Abaixa']] or joystick_commands[self.player]['y_axis'] < -0.2:
                 self.isdown = 1
             else:
                 self.isdown = 0
-            if ((pressed_keys[K_UP] and self.player == 0) or (pressed_keys[K_w] and self.player == 1) or
-                    joystick_commands[self.player]['A']) and self.esta_no_chao():
+            if (pressed_keys[comandos[self.player]['Pula']]or joystick_commands[self.player]['A']) and self.esta_no_chao():
                 self.speed[1] = -jump_speed * grav
-                self.ticks_to_change = 5
                 jump_sound.play()
         else:
-            if (pressed_keys[K_UP] and self.player == 0)  or (pressed_keys[K_w] and self.player == 1) or joystick_commands[self.player]['y_axis'] > 0.2:
+            if pressed_keys[comandos[self.player]['Pula']] or joystick_commands[self.player]['y_axis'] > 0.2:
                 self.isdown = 1
             else:
                 self.isdown = 0
-            if ((pressed_keys[K_DOWN] and self.player == 0) or (pressed_keys[K_w] and self.player == 1) or
-                    joystick_commands[self.player]['A']) and self.esta_no_chao():
+            if (pressed_keys[comandos[self.player]['Abaixa']] or joystick_commands[self.player]['A']) and self.esta_no_chao():
                 self.speed[1] = -jump_speed * grav
-                self.ticks_to_change = 5
                 jump_sound.play()
 
-        if ((pressed_keys[K_UP] and self.player == 0) or (pressed_keys[K_w] and self.player == 1) or joystick_commands[self.player]['A']) and self.esta_no_chao():
-            self.speed[1] = -jump_speed* grav
-            self.ticks_to_change = 5
-            jump_sound.play()
-
-        if (pressed_keys[K_LEFT] and self.player == 0)  or (pressed_keys[K_a] and self.player == 1) or joystick_commands[self.player]['x_axis'] < -0.2:
+        if pressed_keys[comandos[self.player]['Esquerda']]or joystick_commands[self.player]['x_axis'] < -0.2:
             if self.speed[0] > -1*player_speed:
                 self.speed[0] = -player_speed
             self.orientation = 0
-        elif (pressed_keys[K_RIGHT] and self.player == 0) or (pressed_keys[K_d] and self.player == 1) or joystick_commands[self.player]['x_axis'] > 0.2:
+        elif pressed_keys[comandos[self.player]['Direita']] or joystick_commands[self.player]['x_axis'] > 0.2:
             if self.speed[0] < player_speed:
                 self.speed[0] = player_speed
             self.orientation = 1
         else:
             self.speed[0] = 0
 
-        if (pressed_keys[K_RSHIFT] and self.player == 0) or (pressed_keys[K_LSHIFT] and self.player == 1)  or (pressed_keys[K_d] and self.player == 1)or joystick_commands[self.player]['R_trigger'] > 0:
-            if self.speed[0] > 0:
-                self.speed[0] += player_acceleration
-            elif self.speed[0]< 0:
-                self.speed[0] -= player_acceleration
+        if pressed_keys[comandos[self.player]['Corre']] or joystick_commands[self.player]['R_trigger'] > 0:
+            self.speed[0] += player_acceleration*signal(self.speed[0])
             if self.speed[0] > player_max_speed or self.speed[0] < -1*player_max_speed:
                 self.speed[0] = signal(self.speed[0])* player_max_speed
 
-        if ((pressed_keys[K_RCTRL] and self.player == 0) or (pressed_keys[K_SPACE] and self.player == 1) or joystick_commands[self.player]['X']) and self.bombs > 0 and not self.bomb_button_hold:
+        if (pressed_keys[comandos[self.player]['Bomba']] or joystick_commands[self.player]['X']) and self.bombs > 0 and not self.bomb_button_hold:
             self.bomb_button_hold = 1
             if self.orientation == 0:
                 bomba = Bomb(self.position[0] - 32, self.position[1] - (48-self.sizey))
@@ -557,7 +603,7 @@ class Player(Bloco):
                 bomba.remove()
             else:
                 self.bombs -= 1
-        elif not((pressed_keys[K_RCTRL] and self.player == 0) or (pressed_keys[K_LCTRL] and self.player == 1) or joystick_commands[self.player]['X']):
+        elif not (pressed_keys[comandos[self.player]['Bomba']] or joystick_commands[self.player]['X']):
             self.bomb_button_hold = 0
 
     def change_sprite(self, new):
@@ -565,7 +611,7 @@ class Player(Bloco):
         """Essa função não é tão trivial. Quando a sprite muda, o seu tamanho também pode mudar, causando problemas de colisão."""
         old = self.sprite_index
         self.sprite_index = new
-        self.ticks_to_change = 5
+        self.ticks_to_change = 8
 
         posx = self.position[0]
         posy = self.position[1]
@@ -622,7 +668,7 @@ class Player(Bloco):
                 if self.ticks_to_change == 0:
                     self.change_sprite(1 - self.sprite_index)
             else:
-                self.ticks_to_change = 5
+                self.ticks_to_change = 8
                 if self.sprite_index == 1:          #speed == 0
                     self.change_sprite(0)
                 elif self.sprite_index == 2 and self.esta_no_chao():
@@ -639,7 +685,7 @@ class Player(Bloco):
                 if self.ticks_to_change == 0:
                     self.change_sprite(9 - self.sprite_index)
             else:
-                self.ticks_to_change = 5
+                self.ticks_to_change = 8
                 if self.sprite_index == 5:          #speed == 0
                     self.change_sprite(4)
                 elif self.sprite_index == 6 and self.esta_no_chao():
@@ -664,6 +710,8 @@ class Player(Bloco):
         if self.ticks_to_stop == 0:
             try:
                 joystick[self.player].set_vibration(0, 0)
+            except:
+                pass
             finally:
                 funcoes_update.remove(self.stop_vibration)
 
@@ -674,12 +722,13 @@ class Player(Bloco):
             self.change_sprite(self.sprite_index + 4)
 
     def damage(self, critic = 0):
+        global grav
         if self.took_damage == 0:
             try:
                 if self.ticks_to_stop == 0:
                     joystick[self.player].set_vibration(1, 1)
                     funcoes_update.append(self.stop_vibration)
-                    self.ticks_to_stop = 20
+                    self.ticks_to_stop = 35
             except:
                 pass
 
@@ -688,6 +737,7 @@ class Player(Bloco):
                 if self.sprite_index >= 3:
                     self.change_sprite(self.sprite_index - 3)
             else:
+                self.is_dead = 1
                 death_sound.play()
                 if self.controlling_grav:
                     grav = signal(grav)*grav
@@ -702,16 +752,34 @@ class Player(Bloco):
         label2 = myfont.render(str(self.bombs), 1, (0, 0, 0))
         if self.player == 0:
             screen.blit(label, (65, 30))
-            screen.blit(label2, (135, 30))
+            screen.blit(label2, (165, 30))
             screen.blit(clip_sheet([302, 0, 24, 32]), [30, 27])
-            screen.blit(clip_sheet([360, 0, 30, 48]), [100, 12])
+            screen.blit(clip_sheet([360, 0, 30, 48]), [130, 12])
             screen.fill(green, Rect(30, 70, (int)(self.mana*150/max_mana),32))
         else:
-            screen.blit(label, (1165, 30))
+            screen.blit(label, (1135, 30))
             screen.blit(label2, (1235, 30))
-            screen.blit(clip_sheet([302, 0, 24, 32]), [1130, 27])
+            screen.blit(clip_sheet([302, 0, 24, 32]), [1100, 27])
             screen.blit(clip_sheet([360, 0, 30, 48]), [1200, 12])
             screen.fill(green, Rect(1255 - (int)(self.mana*150/max_mana), 70, (int)(self.mana*150/max_mana),32))
+
+class Temporary_Screen():
+    def __init__(self, image, caption, color = (0, 0, 0), tempo = 150):
+        self.image = image
+        self.t0 = time.clock()
+        self.tempo = tempo
+        self.caption = caption
+        self.color = color
+        funcoes_update.append(self.update)
+
+    def update(self):
+        self.tempo -= 1
+        screen.blit(self.image, (0, 0))
+        label = gamefont.render(self.caption, 1, self.color)
+        screen.blit(label, ((screen_x - gamefont.size(str(self.caption))[0])/2, (screen_y - gamefont.size(str(self.caption))[1])/2))
+        if self.tempo < 0:
+            funcoes_update.remove(self.update)
+            funcoes_update.append(main_menu.update)
 
 def inicializa_mapa(mapa):
     funcoes_update.append(print_background)
@@ -738,7 +806,9 @@ def inicializa_mapa(mapa):
             elif linhas[i][j] == 'M':
                 mario = Player(32*j, 32*i)
             elif linhas[i][j] == 'L':
-                mario = Player(32*j, 32*i, 1)
+                luigi = Player(32*j, 32*i, 1)
+            elif linhas[i][j] == '*':
+                Box(32*j, 32*i, random.choice(["Coin", "Bomb", "Cogumelo"]), 5)
             elif linhas[i][j] == 'B':
                 Box(32*j, 32*i)
             elif linhas[i][j] == 'Z':
@@ -754,13 +824,15 @@ def inicializa_mapa(mapa):
             elif linhas[i][j] == 'X':
                 Bomb(32*j, 32*i)
     funcoes_update.append(print_tela)
+    Bloco(0,-200, 1280, 100, None)
+    Bloco(1280, -200, 100, 968, None)
+    Bloco(-100, -200, 100, 968, None)
+    return mario, luigi
 
-    if mario == None:
-        print("Mapa com defeito. Não foi definida a posição inicial do jogador")
-        exit()
-    Bloco(0,-100, 1280, 100, None)
-    Bloco(1280, 0, 100, 768, None)
-    Bloco(-100, 0, 100, 768, None)
+def inicializa_jogo():
+    mapa  = open('stage.txt', 'r')
+    inicializa_mapa(mapa)
+    mapa.close()
 
 def print_background():
     screen.blit(background, (0, 0))
@@ -776,7 +848,6 @@ def game_restart():
     del lista_obj[0][:]
     del lista_obj[1][:]
     del funcoes_update[:]
-    funcoes_update.append(main_menu.update)
     grav = signal(grav) * grav
 
 def get_joystick_input(i):
@@ -813,45 +884,113 @@ def get_joystick_input(i):
             if event.button == 3:
                 joystick_commands[i]["Y"] = 0
 
-def inicializa_jogo():
-    mapa  = open('stage.txt', 'r')
-    inicializa_mapa(mapa)
-    mapa.close()
-
 def start_coin_rush():
     global t0
+    global bombs_per_player
+
+    bombs_per_player = 5
     t0 = time.clock()
     mapa  = open('coin_rush.txt', 'r')
     inicializa_mapa(mapa)
     mapa.close()
     funcoes_update.append(update_coin_rush)
 
+def armageddon():
+    if random.randrange(1, int(2/deltat)) == 1:
+        with lock:
+            bomba = Bomb(random.randrange(0, 1250), -50, random.randrange(-6, 6), 1)
+            if collides(bomba, lista_obj[0]) != 0:
+                bomba.remove()
+            else:
+                funcoes_update.append(bomba.update)
+                bomba.dragger = Dragger(bomba)
+                lista_obj[0].append(bomba)
+
 def update_coin_rush():
-    label = myfont.render(str(int(100-2*(time.clock()- t0))), 1, (0, 0, 0))
-    screen.blit(label, (500, 30))
+    tempo = str(int(100-2*(time.clock()- t0)))
+    label = gamefont.render(tempo, 1, (0, 0, 0))
+    screen.blit(label, ((screen_x - gamefont.size(tempo)[0])/2, 30))
 
+def start_arena():
+    global t0
+    global bombs_per_player
+    global mario, luigi
+    global chuva_de_bombas
+    chuva_de_bombas = 0
+    bombs_per_player = 10
+    t0 = time.clock()
+    mapa  = open('arena.txt', 'r')
+    mario, luigi = inicializa_mapa(mapa)
+    mapa.close()
+    funcoes_update.append(update_arena)
 
+def update_arena():
+    global chuva_de_bombas
+    label = gamefont.render("Fight!", 1, (0, 0, 0))
+    screen.blit(label, ((screen_x - gamefont.size("Fight!")[0])/2, 30))
+    tempo = int(50-2*(time.clock()- t0))
+    if tempo > 0:
+        label = myfont.render(str(tempo), 1, (0, 0, 0))
+        screen.blit(label, ((screen_x - myfont.size(str(tempo))[0])/2, 100))
+    elif chuva_de_bombas == 0:
+        chuva_de_bombas = 1
+        funcoes_update.append(armageddon)
+    if mario.is_dead and not luigi.is_dead:
+        game_restart()
+        funcoes_update.append(mario.stop_vibration)
+        funcoes_update.append(luigi.stop_vibration)
+        mario.ticks_to_stop = 35
+        luigi.ticks_to_stop = 35
+        Temporary_Screen(luigi_wins, "Luigi wins!", (255, 0, 0))
+        ##mario wins
+    elif luigi.is_dead and not mario.is_dead:
+        game_restart()
+        funcoes_update.append(mario.stop_vibration)
+        funcoes_update.append(luigi.stop_vibration)
+        mario.ticks_to_stop = 35
+        luigi.ticks_to_stop = 35
+        Temporary_Screen(mario_wins, "Mario wins!")
+        #luigi wins
+    elif mario.is_dead:
+        game_restart()
+        funcoes_update.append(mario.stop_vibration)
+        funcoes_update.append(luigi.stop_vibration)
+        mario.ticks_to_stop = 35
+        luigi.ticks_to_stop = 35
+        Temporary_Screen(draw_round, "It's a draw :/")
+        #empate
+
+bombs_per_player = 5
+
+q = queue.Queue()
 clock = pygame.time.Clock()
 lista_obj = [[], []]
 funcoes_update = []
-pygame.font.init()
+
+comandos = [{"Pula": K_UP, "Abaixa": K_DOWN, "Direita": K_RIGHT, "Esquerda": K_LEFT, "Bomba": K_1, "Poder": K_0, "Comprar Mana": K_2, "Corre": K_RCTRL, "Pause": K_ESCAPE},
+            {"Pula": K_w, "Abaixa": K_s, "Direita": K_d, "Esquerda": K_a, "Bomba":K_e, "Poder": K_SPACE, "Comprar Mana": K_q, "Corre": K_RSHIFT, "Pause":K_ESCAPE}]
+
 joystick_commands = [{"L_trigger": 0, "R_trigger": 0, "A": 0, "B": 0, "X": 0, "Y": 0, "Start": 0, "x_axis": 0, "y_axis": 0},
                      {"L_trigger": 0, "R_trigger": 0, "A": 0, "B": 0, "X": 0, "Y": 0, "Start": 0, "x_axis": 0, "y_axis": 0}]
 
-#inicializa_mapa()
 option4 = Option("op4", None)
 option5 = Option("op5", None)
 option6 = Option("op6", None)
-
 menu1 = Menu(option4, option5, option6)
-
 play = Option("Play", inicializa_jogo)
 coin_rush = Option("Coin Rush", start_coin_rush)
+arena = Option("Arena", start_arena)
 option3 = Option("op3", menu1)
-
-main_menu = Menu(play, coin_rush, option3)
+main_menu = Menu(arena, coin_rush, play, option3)
 funcoes_update.append(main_menu.update)
+
 last_time = time.clock()
+
+for i in range(1):                                                                                                      #número de Threads usadas
+     t = Thread(target=worker)
+     t.daemon = True
+     t.start()
+
 while(1):
     deltat = time.clock() - last_time
     last_time = time.clock()
@@ -860,12 +999,14 @@ while(1):
             exit()
     get_joystick_input(0)
     get_joystick_input(1)
+
     for funcao in funcoes_update:
-        funcao()
-    for obj in lista_obj[0]:
-        assert not collides(obj, lista_obj[0])
+        q.put(funcao)
+
     pressed_keys = pygame.key.get_pressed()
     if (pressed_keys[K_LCTRL] or pressed_keys[K_RCTRL]) and pressed_keys[K_r]:
         game_restart()
+        funcoes_update.append(main_menu.update)
+    q.join()
     pygame.display.update()
-    clock.tick(30)
+    clock.tick(50)

@@ -1,9 +1,9 @@
                                         x
-           CCCCC          CCCCC         x
+          CCCCC          CCCCC          x
                                         x
                                         x
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
-     WZ                            ZW   x
+     WZ                          ZW     x
                    YY                   x
           JJ       SS       JJ          x
                                         x
@@ -11,7 +11,7 @@ JJCCCCCCCC                    CCCCCCCCJJx
   SSSSSSSS        *WB*        SSSSSSSS  x
                                         x
               S          S              x
-              SSSSSSSSSSSS              x
+  *           SSSSSSSSSSSS           *  x
                                         x
   M                                  L  x
          SSS                SSS         x

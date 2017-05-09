@@ -7,18 +7,18 @@
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
                                         x
-                                        x
-                                        x
-                                        x
-               S            S           x
-         L                              x
-                     M                  x
-         S                              x
-                     S                  x
-           SS                           x
-                             Z          x
-     SSJJBJJ                            x
-      S                                 x
-                                        x
-1                                      3x
-2FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF4x
+JJJS     SSSSS            SSSSS     SJJJx
+CCCS                                SCCCx
+CCCS            S      S            SCCCx
+CCSS               SS               SSCCx
+CCCS      L                  M      SCCCx
+CCCS          SS        SS          SCCCx
+SCCS      S        **        S      SCCSx
+CCCS                                SCCCx
+CCCS                                SCCCx
+JJJSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSJJJx                                       x
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTx
+UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUx
