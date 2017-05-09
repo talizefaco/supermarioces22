@@ -6,19 +6,19 @@
                                         x
                                         x
                                         x
-CCCCCCCCCC            CCCCCCCCC         x
-SSSSSSSSSS            SSSSSSSSS         x
-            JJBJWJ                      x
                                         x
-            SSSSSSS                     x
                                         x
- M                                 L    x
+                                        x
+                                        x
+                                        x
+         L                              x
+                     M                  x
          S                              x
- S                       S         S    x
+                     *                  x
            SS                           x
                              Z          x
-     SSJJBJJ         W   S              x
-      S                  S              x
-                         SCCCCC    CCCCCx
-                                        x
-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFx
+     SSJJBJJ     S   W   S              x
+      S          S       S              x
+   Y             S       SCCCCC    CCCCCx
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1    3TTTTx
+UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2FFFF4UUUUx
