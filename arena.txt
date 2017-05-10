@@ -6,7 +6,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
      WZ                          ZW     x
                    YY                   x
           JJ       SS       JJ          x
-                                        x
+     i    g                  g    i     x
 JJCCCCCCCC                    CCCCCCCCJJx
   SSSSSSSS        *WB*        SSSSSSSS  x
                                         x
@@ -18,7 +18,7 @@ JJCCCCCCCC                    CCCCCCCCJJx
   S                                  S  x
           Z                  Z          x
                                         x
-                                        x
+     g    i    g        g    i    g     x
       SSSSSSSSS          SSSSSSSSS      x
                                         x
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFx

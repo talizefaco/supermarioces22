@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-                                        x
+9999999999999999999999999999999999999999x
            CCCCC          CCCCC         x
-                                        x
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSx
                                         x
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
      WZ                            ZW   x
@@ -9,9 +8,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCx
           JJ       SS       JJ          x
                                         x
 JJCCCCCCCC                    CCCCCCCCJJx
-  SSSSSSSS        *WB*        SSSSSSSS  x
+  SSSSSSSS                    SSSSSSSS  x
                                         x
-              S          S              x
+              S  i       S              x
               SSSSSSSSSSSS              x
                                         x
   M                                  L  x
@@ -19,33 +18,7 @@ JJCCCCCCCC                    CCCCCCCCJJx
   S                                  S  x
           Z                  Z          x
                                         x
-                                        x
+          i                 i           x
       SSSSSSSSS          SSSSSSSSS      x
                                         x
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFx
-=======
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-                                        x
-         L                              x
-                     M                  x
-         S                              x
-                     *                  x
-           SS                           x
-                             Z          x
-     SSJJBJJ     S   W   S              x
-      S          S       S              x
-   Y             S       SCCCCC    CCCCCx
-TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1    3TTTTx
-UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2FFFF4UUUUx
->>>>>>> e82318c317ea899f70e563fb964cb3e1805bb2eb
