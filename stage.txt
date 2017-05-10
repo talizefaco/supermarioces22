@@ -1,3 +1,4 @@
+<<<<<<< HEAD
                                         x
            CCCCC          CCCCC         x
                                         x
@@ -22,3 +23,29 @@ JJCCCCCCCC                    CCCCCCCCJJx
       SSSSSSSSS          SSSSSSSSS      x
                                         x
 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFx
+=======
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+                                        x
+         L                              x
+                     M                  x
+         S                              x
+                     *                  x
+           SS                           x
+                             Z          x
+     SSJJBJJ     S   W   S              x
+      S          S       S              x
+   Y             S       SCCCCC    CCCCCx
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1    3TTTTx
+UUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2FFFF4UUUUx
+>>>>>>> e82318c317ea899f70e563fb964cb3e1805bb2eb
